@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Dashboard interativo para análise de presença geográfica, força de mercado e oportunidades B2B de operadoras de planos de saúde ANS.">
+    <title>ANS Analytics — Dashboard de Operadoras de Saúde</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-2.35.0.min.js" charset="utf-8"></script>
+
+    <!-- jQuery & Select2 (Para autocomplete nos filtros) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <!-- App CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <!-- ==================== SIDEBAR ==================== -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <h1>ANS Analytics</h1>
+                    <span class="logo-subtitle">Inteligência em Saúde</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toggle de Visão -->
+        <div class="filter-section">
+            <label class="filter-label">Modo de Análise</label>
+            <div class="toggle-container" id="toggle-visao">
+                <button class="toggle-btn active" data-view="municipio" id="btn-visao-municipio">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                    Município
+                </button>
+                <button class="toggle-btn" data-view="operadora" id="btn-visao-operadora">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>
+                    Operadora
+                </button>
+            </div>
+        </div>
+
+        <div class="filter-divider"></div>
+
+        <!-- Filtro de UF -->
+        <div class="filter-section">
+            <label class="filter-label" for="filter-uf">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                    <path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/>
+                </svg>
+                Estado (UF)
+            </label>
+            <select id="filter-uf" class="filter-select">
+                <option value="">Todos os estados</option>
+            </select>
+        </div>
+
+        <!-- Filtro de Município (visível na Visão Município) -->
+        <div class="filter-section" id="filter-municipio-section">
+            <label class="filter-label" for="filter-municipio">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                </svg>
+                Município
+            </label>
+            <select id="filter-municipio" class="filter-select">
+                <option value="">Selecione um município</option>
+            </select>
+        </div>
+
+        <!-- Filtro de Operadora (visível na Visão Operadora) -->
+        <div class="filter-section" id="filter-operadora-section">
+            <label class="filter-label" for="filter-operadora">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+                Operadora
+            </label>
+            <select id="filter-operadora" class="filter-select">
+                <option value="">Selecione uma operadora</option>
+            </select>
+        </div>
+
+        <!-- Filtro de Modalidade -->
+        <div class="filter-section">
+            <label class="filter-label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+                </svg>
+                Modalidade
+            </label>
+            <div class="checkbox-group" id="filter-modalidade">
+                <!-- Populado via JS -->
+            </div>
+        </div>
+
+        <div class="filter-divider"></div>
+
+        <!-- Botão Aplicar -->
+        <div class="filter-section">
+            <button class="btn-apply" id="btn-aplicar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="M21 21l-4.35-4.35"/>
+                </svg>
+                Analisar
+            </button>
+        </div>
+
+        <div class="sidebar-footer">
+            <span>TCC — Análise ANS 2025</span>
+        </div>
+    </aside>
+
+    <!-- ==================== MAIN CONTENT ==================== -->
+    <main class="main-content" id="main-content">
+
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="loading-overlay">
+            <div class="loading-spinner">
+                <div class="spinner-ring"></div>
+                <span>Carregando dados...</span>
+            </div>
+        </div>
+
+        <!-- Welcome State -->
+        <div class="welcome-state" id="welcome-state">
+            <div class="welcome-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="64" height="64">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                </svg>
+            </div>
+            <h2>Bem-vindo ao ANS Analytics</h2>
+            <p>Selecione os filtros na barra lateral e clique em <strong>Analisar</strong> para começar.</p>
+            <div class="welcome-tips">
+                <div class="tip">
+                    <span class="tip-icon">📍</span>
+                    <span><strong>Visão Município:</strong> Analise demanda, concorrência e oportunidades B2B.</span>
+                </div>
+                <div class="tip">
+                    <span class="tip-icon">🏢</span>
+                    <span><strong>Visão Operadora:</strong> Analise footprint geográfico, risco e concentração.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ======= VISÃO MUNICÍPIO ======= -->
+        <section class="dashboard-view" id="view-municipio" style="display:none;">
+            <!-- KPI Cards -->
+            <div class="kpi-grid" id="kpi-municipio">
+                <div class="kpi-card kpi-population" id="kpi-populacao">
+                    <div class="kpi-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </div>
+                    <div class="kpi-content">
+                        <span class="kpi-value" id="val-populacao">—</span>
+                        <span class="kpi-label">População (2022)</span>
+                    </div>
+                </div>
+                <div class="kpi-card kpi-growth" id="kpi-populacao-est">
+                    <div class="kpi-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                    </div>
+                    <div class="kpi-content">
+                        <span class="kpi-value" id="val-populacao-est">—</span>
+                        <span class="kpi-label">Pop. Estimada 2025</span>
+                        <span class="kpi-badge" id="badge-crescimento">—</span>
+                    </div>
+                </div>
+                <div class="kpi-card kpi-clt" id="kpi-clt">
+                    <div class="kpi-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                    </div>
+                    <div class="kpi-content">
+                        <span class="kpi-value" id="val-clt">—</span>
+                        <span class="kpi-label">Vínculos CLT</span>
+                    </div>
+                </div>
+                <div class="kpi-card kpi-vidas" id="kpi-vidas">
+                    <div class="kpi-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    </div>
+                    <div class="kpi-content">
+                        <span class="kpi-value" id="val-vidas">—</span>
+                        <span class="kpi-label">Total de Vidas Ativas</span>
+                    </div>
+                </div>
+                <div class="kpi-card kpi-cobertura" id="kpi-cobertura">
+                    <div class="kpi-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    </div>
+                    <div class="kpi-content">
+                        <span class="kpi-value" id="val-cobertura">—</span>
+                        <span class="kpi-label">Taxa de Cobertura</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráficos -->
+            <div class="charts-grid">
+                <div class="chart-card chart-wide" id="card-termometro">
+                    <div class="chart-header">
+                        <h3>Termômetro B2B</h3>
+                        <span class="chart-subtitle">Potencial CLT vs Vidas Atuais</span>
+                    </div>
+                    <div class="chart-body" style="display: flex; flex-direction: column; gap: 10px;">
+                        <div id="chart-termometro-gauge" style="flex: 1; min-height: 200px;"></div>
+                        <div id="chart-termometro-bar" style="flex: 1; min-height: 120px;"></div>
+                    </div>
+                </div>
+                <div class="chart-card chart-wide" id="card-ranking">
+                    <div class="chart-header">
+                        <h3>Top 10 Operadoras</h3>
+                        <span class="chart-subtitle">Ranking por beneficiários e market share</span>
+                    </div>
+                    <div class="chart-body" id="chart-ranking"></div>
+                </div>
+                <div class="chart-card" id="card-modalidade">
+                    <div class="chart-header">
+                        <h3>Distribuição por Modalidade</h3>
+                        <span class="chart-subtitle">Vidas por categoria</span>
+                    </div>
+                    <div class="chart-body" id="chart-modalidade"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ======= VISÃO OPERADORA ======= -->
+        <section class="dashboard-view" id="view-operadora" style="display:none;">
+            <!-- KPI Cards -->
+            <div class="kpi-grid kpi-grid-3" id="kpi-operadora">
+                <div class="kpi-card kpi-beneficiarios" id="kpi-total-benef">
+                    <div class="kpi-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </div>
+                    <div class="kpi-content">
+                        <span class="kpi-value" id="val-total-benef">—</span>
+                        <span class="kpi-label">Total de Beneficiários</span>
+                    </div>
+                </div>
+                <div class="kpi-card kpi-presenca" id="kpi-presenca">
+                    <div class="kpi-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    </div>
+                    <div class="kpi-content">
+                        <span class="kpi-value" id="val-presenca">—</span>
+                        <span class="kpi-label">Presença Geográfica</span>
+                        <span class="kpi-badge" id="badge-presenca">—</span>
+                    </div>
+                </div>
+                <div class="kpi-card kpi-dependencia" id="kpi-dependencia">
+                    <div class="kpi-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    </div>
+                    <div class="kpi-content">
+                        <span class="kpi-value" id="val-dependencia">—</span>
+                        <span class="kpi-label">Índice de Dependência</span>
+                        <span class="kpi-detail" id="detail-dependencia">—</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráficos -->
+            <div class="charts-grid">
+                <div class="chart-card chart-full" id="card-mapa">
+                    <div class="chart-header">
+                        <h3>Mapa de Concentração</h3>
+                        <span class="chart-subtitle">Distribuição geográfica de beneficiários</span>
+                    </div>
+                    <div class="chart-body chart-body-map" id="chart-mapa"></div>
+                </div>
+                <div class="chart-card chart-wide" id="card-pareto">
+                    <div class="chart-header">
+                        <h3>Curva ABC — Risco Geográfico</h3>
+                        <span class="chart-subtitle">Top 10 cidades e concentração acumulada</span>
+                    </div>
+                    <div class="chart-body" id="chart-pareto"></div>
+                </div>
+                <div class="chart-card" id="card-donut">
+                    <div class="chart-header">
+                        <h3>Força na Praça Principal</h3>
+                        <span class="chart-subtitle" id="donut-subtitle">Market share na cidade principal</span>
+                    </div>
+                    <div class="chart-body" id="chart-donut"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- App Scripts -->
+    <script src="{{ url_for('static', filename='js/filters.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/map.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
