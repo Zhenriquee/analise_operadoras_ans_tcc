@@ -72,6 +72,47 @@ def get_kpis():
     })
 
 
+@operadora_bp.route("/info", methods=["GET"])
+def get_info():
+    """
+    Informações cadastrais da operadora (dim_operadora).
+
+    Retorna: razão social, CNPJ, modalidade, endereço, representante.
+    """
+    dl = DataLoader()
+    operadora = request.args.get("operadora", "")
+
+    if not operadora:
+        return jsonify({})
+
+    try:
+        codigo = int(operadora)
+        row = dl.dim_op[dl.dim_op["codigo_registro_operadora"] == codigo]
+    except ValueError:
+        row = dl.dim_op[dl.dim_op["razao_social"] == operadora]
+
+    if row.empty:
+        return jsonify({})
+
+    r = row.iloc[0]
+
+    # Formatar CNPJ (14 dígitos)
+    cnpj_raw = str(int(r["cnpj"])).zfill(14)
+    cnpj_fmt = f"{cnpj_raw[:2]}.{cnpj_raw[2:5]}.{cnpj_raw[5:8]}/{cnpj_raw[8:12]}-{cnpj_raw[12:14]}"
+
+    return jsonify({
+        "razao_social": r["razao_social"],
+        "cnpj": cnpj_fmt,
+        "modalidade": r["modalidade"],
+        "logradouro": r["logradouro"],
+        "bairro": r["bairro"],
+        "cidade": r["cidade"],
+        "uf": r["uf"],
+        "representante": r["representante"],
+        "codigo_registro": int(r["codigo_registro_operadora"]),
+    })
+
+
 @operadora_bp.route("/mapa", methods=["GET"])
 def get_mapa():
     """
