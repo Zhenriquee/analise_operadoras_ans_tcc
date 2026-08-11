@@ -8,8 +8,9 @@ from flask import Flask, render_template
 from config import Config
 from src.data_loader import DataLoader
 from src.api.filters import filters_bp
-from src.api.municipio import municipio_bp
 from src.api.operadora import operadora_bp
+from src.api.mercado import mercado_bp
+from src.api.expansao import expansao_bp
 
 
 def create_app():
@@ -23,8 +24,9 @@ def create_app():
 
     # Registrar Blueprints da API
     app.register_blueprint(filters_bp)
-    app.register_blueprint(municipio_bp)
     app.register_blueprint(operadora_bp)
+    app.register_blueprint(mercado_bp)
+    app.register_blueprint(expansao_bp)
 
     # Rota principal — serve o dashboard
     @app.route("/")

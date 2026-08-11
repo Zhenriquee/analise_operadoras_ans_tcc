@@ -1,24 +1,27 @@
 /**
  * charts.js — Funções de criação de gráficos Plotly.js.
- * Tema claro profissional com foco em legibilidade.
+ * Tema dark premium executivo.
  */
 
 const Charts = (() => {
-    const COLORS = [
-        '#635bff', '#3a86ff', '#0cbc8b', '#e68a00',
-        '#d9534f', '#8b5cf6', '#06b6d4', '#ec4899',
-        '#14b8a6', '#f97316', '#6366f1', '#22d3ee',
-    ];
+    // Paleta Dark Premium
+    const COLORS = {
+        primary: '#635bff',
+        accent: '#0cbc8b',
+        blue: '#3a86ff',
+        amber: '#e68a00',
+        red: '#d9534f',
+        textMain: '#f8f9fa',
+        textMuted: '#8892b0',
+        grid: '#212530',
+        bg: 'rgba(0,0,0,0)'
+    };
 
     const BASE_LAYOUT = {
-        paper_bgcolor: 'rgba(0,0,0,0)',
-        plot_bgcolor: 'rgba(0,0,0,0)',
-        font: {
-            family: "'Inter', sans-serif",
-            color: '#525f7f',
-            size: 12,
-        },
-        margin: { l: 20, r: 20, t: 10, b: 20 },
+        paper_bgcolor: COLORS.bg,
+        plot_bgcolor: COLORS.bg,
+        font: { family: "'Inter', sans-serif", color: COLORS.textMuted, size: 12 },
+        margin: { l: 20, r: 20, t: 20, b: 20 },
         showlegend: false,
         autosize: true,
     };
@@ -31,79 +34,14 @@ const Charts = (() => {
     }
 
     /**
-     * Termômetro B2B — Gauge full-width com barra comparativa abaixo.
-     * Agora recebe 1 container e cria 2 sub-divs internamente.
+     * Aba 1: Top 10 Municípios (Barras Horizontais com Gradiente)
      */
-    function renderGauge(containerId, data) {
+    function renderTop10Bars(containerId, data) {
         const el = document.getElementById(containerId);
         if (!el) return;
 
-        el.innerHTML = '';
-
-        // Criar sub-divs
-        const gaugeDiv = document.createElement('div');
-        gaugeDiv.style.height = '220px';
-        const barDiv = document.createElement('div');
-        barDiv.style.height = '100px';
-        el.appendChild(gaugeDiv);
-        el.appendChild(barDiv);
-
-        // Gauge
-        Plotly.newPlot(gaugeDiv, [{
-            type: 'indicator',
-            mode: 'gauge+number',
-            value: data.penetracao,
-            number: { suffix: '%', font: { size: 40, color: '#1a1f36', weight: 700 } },
-            title: { text: 'Penetração B2B (Vidas / CLT)', font: { size: 13, color: '#8898aa' } },
-            gauge: {
-                axis: { range: [0, 100], tickfont: { color: '#8898aa', size: 11 }, dtick: 25 },
-                bar: { color: '#635bff', thickness: 0.65 },
-                bgcolor: '#f0f2f5',
-                borderwidth: 0,
-                steps: [
-                    { range: [0, 30], color: '#fdf0f0' },
-                    { range: [30, 70], color: '#fff8e6' },
-                    { range: [70, 100], color: '#e6f8f1' },
-                ],
-            },
-        }], {
-            ...BASE_LAYOUT,
-            margin: { l: 30, r: 30, t: 40, b: 5 },
-        }, CFG);
-
-        // Barra comparativa
-        Plotly.newPlot(barDiv, [
-            {
-                type: 'bar', y: [''], x: [data.vidas_atuais], orientation: 'h',
-                name: `Vidas Atuais: ${fmtNum(data.vidas_atuais)}`,
-                marker: { color: '#635bff' },
-                hovertemplate: 'Vidas Atuais: %{x:,.0f}<extra></extra>',
-            },
-            {
-                type: 'bar', y: [''], x: [data.oportunidade], orientation: 'h',
-                name: `Oportunidade CLT: ${fmtNum(data.oportunidade)}`,
-                marker: { color: '#e2e6ed' },
-                hovertemplate: 'Oportunidade: %{x:,.0f}<extra></extra>',
-            },
-        ], {
-            ...BASE_LAYOUT,
-            margin: { l: 5, r: 5, t: 5, b: 5 },
-            barmode: 'stack',
-            xaxis: { showticklabels: false, zeroline: false, showgrid: false },
-            yaxis: { showticklabels: false },
-            showlegend: true,
-            legend: { orientation: 'h', x: 0.5, xanchor: 'center', y: -0.6,
-                font: { size: 11, color: '#525f7f' }, bgcolor: 'rgba(0,0,0,0)' },
-        }, CFG);
-    }
-
-    /**
-     * Top 10 Operadoras — barras horizontais legíveis.
-     */
-    function renderRankingBars(containerId, data) {
-        const el = document.getElementById(containerId);
-        if (!el || !data.length) {
-            if (el) el.innerHTML = '<p style="color:#8898aa;text-align:center;padding:60px 0;">Nenhum dado encontrado</p>';
+        if (!data || !data.length) {
+            el.innerHTML = `<p style="color:${COLORS.textMuted};text-align:center;padding:60px 0;">Nenhum dado encontrado</p>`;
             return;
         }
 
@@ -112,149 +50,184 @@ const Charts = (() => {
         Plotly.newPlot(el, [{
             type: 'bar',
             y: reversed.map(d => {
-                const s = d.razao_social;
-                return s.length > 30 ? s.substring(0, 30) + '…' : s;
+                const s = d.municipio;
+                return s.length > 25 ? s.substring(0, 25) + '…' : s;
             }),
             x: reversed.map(d => d.qtd_beneficiarios),
             orientation: 'h',
-            marker: { color: '#635bff', cornerradius: 3 },
-            text: reversed.map(d => `${fmtNum(d.qtd_beneficiarios)}  ·  ${d.market_share}%`),
+            marker: { 
+                color: COLORS.primary,
+                opacity: 0.85,
+                line: { color: COLORS.primary, width: 1 }
+            },
+            text: reversed.map(d => `${fmtNum(d.qtd_beneficiarios)} (${d.percentual}%)`),
             textposition: 'outside',
             cliponaxis: false,
-            textfont: { color: '#525f7f', size: 10 },
+            textfont: { color: COLORS.textMain, size: 11 },
             hovertemplate: '<b>%{y}</b><br>Beneficiários: %{x:,.0f}<extra></extra>',
         }], {
             ...BASE_LAYOUT,
-            margin: { l: 10, r: 130, t: 5, b: 5 },
+            margin: { l: 10, r: 100, t: 10, b: 20 },
             xaxis: {
-                gridcolor: '#edf0f4', tickfont: { color: '#8898aa', size: 10 },
+                gridcolor: COLORS.grid, 
+                tickfont: { color: COLORS.textMuted, size: 10 },
                 zeroline: false, automargin: true,
             },
             yaxis: {
-                tickfont: { color: '#1a1f36', size: 10 }, automargin: true,
+                tickfont: { color: COLORS.textMain, size: 11 }, 
+                automargin: true,
             },
         }, CFG);
     }
 
     /**
-     * Distribuição por Modalidade — Donut limpo.
+     * Aba 2: Gráfico de Dispersão de Oportunidade
      */
-    function renderModalidadePie(containerId, data) {
-        const el = document.getElementById(containerId);
-        if (!el || !data.length) {
-            if (el) el.innerHTML = '<p style="color:#8898aa;text-align:center;padding:60px 0;">Nenhum dado encontrado</p>';
-            return;
-        }
-
-        Plotly.newPlot(el, [{
-            type: 'pie',
-            labels: data.map(d => d.modalidade),
-            values: data.map(d => d.qtd_beneficiarios),
-            hole: 0.5,
-            marker: { colors: COLORS, line: { color: '#ffffff', width: 2 } },
-            textinfo: 'label+percent',
-            textposition: 'outside',
-            textfont: { size: 11, color: '#525f7f' },
-            automargin: true,
-            hovertemplate: '<b>%{label}</b><br>Vidas: %{value:,.0f}<br>%{percent}<extra></extra>',
-        }], {
-            ...BASE_LAYOUT,
-            margin: { l: 40, r: 40, t: 20, b: 20 },
-            showlegend: false,
-        }, CFG);
-    }
-
-    /**
-     * Curva ABC / Pareto — barras + linha acumulada.
-     */
-    function renderParetoChart(containerId, data) {
-        const el = document.getElementById(containerId);
-        if (!el || !data.length) {
-            if (el) el.innerHTML = '<p style="color:#8898aa;text-align:center;padding:60px 0;">Nenhum dado encontrado</p>';
-            return;
-        }
-
-        const labels = data.map(d => {
-            const n = d.nome_municipio;
-            return n.length > 16 ? n.substring(0, 16) + '…' : n;
-        });
-
-        Plotly.newPlot(el, [
-            {
-                type: 'bar', x: labels, y: data.map(d => d.qtd_beneficiarios),
-                marker: { color: '#635bff', cornerradius: 3 },
-                text: data.map(d => fmtNum(d.qtd_beneficiarios)),
-                textposition: 'outside',
-                cliponaxis: false,
-                textfont: { color: '#525f7f', size: 9 },
-                hovertemplate: '<b>%{x}</b><br>Vidas: %{y:,.0f}<extra></extra>',
-                yaxis: 'y',
-            },
-            {
-                type: 'scatter', mode: 'lines+markers+text',
-                x: labels, y: data.map(d => d.percentual_acumulado),
-                line: { color: '#d9534f', width: 2, shape: 'spline' },
-                marker: { size: 6, color: '#d9534f', line: { color: '#fff', width: 1.5 } },
-                text: data.map(d => `${d.percentual_acumulado}%`),
-                textposition: 'top center',
-                cliponaxis: false,
-                textfont: { color: '#d9534f', size: 9 },
-                hovertemplate: 'Acumulado: %{y:.1f}%<extra></extra>',
-                yaxis: 'y2',
-            },
-        ], {
-            ...BASE_LAYOUT,
-            margin: { l: 50, r: 50, t: 30, b: 80 },
-            xaxis: { tickangle: -45, tickfont: { color: '#525f7f', size: 10 }, gridcolor: '#edf0f4' },
-            yaxis: {
-                title: { text: 'Beneficiários', font: { size: 10, color: '#8898aa' } },
-                tickfont: { color: '#8898aa', size: 9 }, gridcolor: '#edf0f4', zeroline: false,
-            },
-            yaxis2: {
-                title: { text: '% Acumulado', font: { size: 10, color: '#d9534f' } },
-                tickfont: { color: '#d9534f', size: 9 },
-                overlaying: 'y', side: 'right', range: [0, 108], showgrid: false,
-            },
-        }, CFG);
-    }
-
-    /**
-     * Donut — Força na Praça Principal.
-     */
-    function renderMarketShareDonut(containerId, data, subtitleId) {
+    function renderScatterOportunidade(containerId, data) {
         const el = document.getElementById(containerId);
         if (!el) return;
 
-        const sub = document.getElementById(subtitleId);
-        if (sub && data.cidade) sub.textContent = `Market share em ${data.cidade}`;
-
-        if (!data.cidade || data.operadora_vidas === 0) {
-            el.innerHTML = '<p style="color:#8898aa;text-align:center;padding:60px 0;">Nenhum dado encontrado</p>';
+        if (!data || !data.length) {
+            el.innerHTML = `<p style="color:${COLORS.textMuted};text-align:center;padding:60px 0;">Nenhum dado de mercado encontrado</p>`;
             return;
         }
 
-        Plotly.newPlot(el, [{
-            type: 'pie',
-            labels: ['Operadora Selecionada', 'Restante do Mercado'],
-            values: [data.operadora_vidas, data.mercado_vidas],
-            hole: 0.6,
-            marker: { colors: ['#635bff', '#e2e6ed'], line: { color: '#fff', width: 2 } },
-            textinfo: 'label+percent',
-            textposition: 'outside',
-            textfont: { size: 11, color: '#525f7f' },
-            automargin: true,
-            hovertemplate: '<b>%{label}</b><br>Vidas: %{value:,.0f}<br>%{percent}<extra></extra>',
-        }], {
+        // Mapear cores dos clusters
+        // 0: Oceano Azul (blue), 1: Saturado Premium (amber), 2: Monopólio (primary), 3: Armadilha (red)
+        const clusterColors = {
+            0: COLORS.blue,
+            1: COLORS.amber,
+            2: COLORS.primary,
+            3: COLORS.red
+        };
+
+        const clusterNames = {
+            0: "Oceano Azul",
+            1: "Saturado Premium",
+            2: "Fortaleza Monopolista",
+            3: "Armadilha Pulverizada"
+        };
+
+        // Agrupar traces por cluster para gerar a legenda corretamente
+        const traces = [];
+        for (let i = 0; i <= 3; i++) {
+            const clusterData = data.filter(d => d.cluster === i);
+            if (clusterData.length > 0) {
+                // Escalar o tamanho da bolha para ficar visível mas não gigante
+                const sizes = clusterData.map(d => Math.max(8, Math.sqrt(d.tamanho) / 10));
+                
+                traces.push({
+                    type: 'scatter',
+                    mode: 'markers',
+                    name: clusterNames[i],
+                    x: clusterData.map(d => d.x_densidade_clt),
+                    y: clusterData.map(d => d.y_hhi),
+                    text: clusterData.map(d => d.municipio),
+                    customdata: clusterData.map(d => [d.tamanho, d.nome_perfil]),
+                    marker: {
+                        size: sizes,
+                        color: clusterColors[i],
+                        opacity: 0.7,
+                        line: { color: COLORS.textMain, width: 0.5 }
+                    },
+                    hovertemplate: 
+                        '<b>%{text}</b><br>' +
+                        'Cluster: %{customdata[1]}<br>' +
+                        'Densidade CLT: %{x:.2f}<br>' +
+                        'HHI: %{y:.2f}<br>' +
+                        'Pop Alvo Pagante: %{customdata[0]:,.0f}' +
+                        '<extra></extra>'
+                });
+            }
+        }
+
+        Plotly.newPlot(el, traces, {
             ...BASE_LAYOUT,
-            margin: { l: 60, r: 60, t: 10, b: 10 },
-            showlegend: false,
-            annotations: [{
-                text: `<b>${data.operadora_share}%</b>`,
-                font: { size: 28, color: '#635bff' },
-                showarrow: false, x: 0.5, y: 0.5,
-            }],
+            showlegend: true,
+            legend: { 
+                orientation: 'h', y: -0.15, x: 0.5, xanchor: 'center',
+                font: { color: COLORS.textMain }
+            },
+            xaxis: {
+                title: 'Densidade CLT (Potencial B2B)',
+                gridcolor: COLORS.grid, 
+                zerolinecolor: COLORS.grid,
+                tickfont: { color: COLORS.textMuted }
+            },
+            yaxis: {
+                title: 'Índice HHI (Concentração/Monopólio)',
+                gridcolor: COLORS.grid, 
+                zerolinecolor: COLORS.grid,
+                tickfont: { color: COLORS.textMuted }
+            },
+            hovermode: 'closest'
         }, CFG);
     }
 
-    return { renderGauge, renderRankingBars, renderModalidadePie, renderParetoChart, renderMarketShareDonut, fmtNum };
+    /**
+     * Aba 3: Tendência CAGED (Termômetro Econômico)
+     */
+    function renderTendenciaCAGED(containerId, data) {
+        const el = document.getElementById(containerId);
+        if (!el) return;
+
+        if (!data || !data.length) {
+            el.innerHTML = `<p style="color:${COLORS.textMuted};text-align:center;padding:60px 0;">Nenhuma área de expansão ou dados CAGED identificados.</p>`;
+            return;
+        }
+
+        const labels = data.map(d => d.competencia);
+        
+        const traceAdmissoes = {
+            x: labels,
+            y: data.map(d => d.admissoes),
+            name: 'Admissões',
+            type: 'bar',
+            marker: { color: COLORS.accent, opacity: 0.8 },
+            hovertemplate: 'Admissões: %{y:,.0f}<extra></extra>'
+        };
+
+        const traceDeslig = {
+            x: labels,
+            y: data.map(d => -d.desligamentos), // Negativo para espelhar para baixo
+            name: 'Desligamentos',
+            type: 'bar',
+            marker: { color: COLORS.red, opacity: 0.8 },
+            hovertemplate: 'Desligamentos: %{y:,.0f}<extra></extra>'
+        };
+
+        const traceSaldo = {
+            x: labels,
+            y: data.map(d => d.saldo),
+            name: 'Saldo Final',
+            type: 'scatter',
+            mode: 'lines+markers',
+            line: { color: COLORS.primary, width: 3 },
+            marker: { size: 8, color: COLORS.textMain },
+            hovertemplate: '<b>Saldo: %{y:,.0f}</b><extra></extra>'
+        };
+
+        Plotly.newPlot(el, [traceAdmissoes, traceDeslig, traceSaldo], {
+            ...BASE_LAYOUT,
+            barmode: 'relative',
+            showlegend: true,
+            legend: { 
+                orientation: 'h', y: 1.1, x: 0.5, xanchor: 'center',
+                font: { color: COLORS.textMain }
+            },
+            xaxis: {
+                gridcolor: COLORS.grid,
+                tickfont: { color: COLORS.textMuted },
+                tickangle: -45
+            },
+            yaxis: {
+                gridcolor: COLORS.grid,
+                zerolinecolor: COLORS.textMuted,
+                zerolinewidth: 1,
+                tickfont: { color: COLORS.textMuted }
+            }
+        }, CFG);
+    }
+
+    return { fmtNum, renderTop10Bars, renderScatterOportunidade, renderTendenciaCAGED };
 })();
