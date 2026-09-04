@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Botão de Voltar -->
+<div class="mb-6">
+    <a href="/" class="inline-flex items-center text-sm font-medium text-slate-500 hover:text-blue-600 transition-colors">
+        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        Voltar para a busca
+    </a>
+</div>
+
+<!-- Cabeçalho da Operadora -->
+<div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-200 mb-8">
+    <div class="flex items-start justify-between">
+        <div>
+            <div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 mb-4 border border-blue-100">
+                Registro ANS: {{ operadora.codigo_registro_operadora }}
+            </div>
+            <h1 class="text-3xl font-bold text-slate-900 mb-2">{{ operadora.razao_social }}</h1>
+            <p class="text-slate-500 text-sm">
+                CNPJ: {{ operadora.cnpj }} • Modalidade: {{ operadora.modalidade }} • Sede: {{ operadora.cidade }}/{{ operadora.uf }}
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- O Data Storytelling começa aqui -->
+<div class="max-w-4xl">
+    <h2 class="text-2xl font-bold text-slate-800 mb-6 border-b pb-4">O Tamanho da Operação</h2>
+    
+    {% if resumo %}
+        <!-- Parágrafo Narrativo -->
+        <p class="text-lg text-slate-600 leading-relaxed mb-8">
+            Até o período de <span class="font-bold text-slate-800">{{ resumo.ultima_competencia }}</span>, 
+            a <span class="font-semibold text-blue-700">{{ operadora.razao_social }}</span> era responsável pela cobertura de saúde de 
+            <span class="font-extrabold text-2xl text-blue-600 bg-blue-50 px-2 py-1 rounded">{{ resumo.total_vidas_formatado }} vidas</span>. 
+            Sua operação logística e rede de atendimento abragem beneficiários distribuídos em 
+            <span class="font-bold text-slate-800">{{ resumo.total_municipios }} municípios</span> brasileiros.
+        </p>
+
+        <!-- Espaço reservado para o Gráfico de Pirâmide Etária (Próximo passo!) -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-96 flex flex-col items-center justify-center text-slate-400">
+            <svg class="w-12 h-12 mb-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+            <p>O gráfico da Pirâmide Etária (Perfil Demográfico) será inserido aqui.</p>
+        </div>
+    {% else %}
+        <div class="p-6 bg-yellow-50 text-yellow-800 rounded-xl border border-yellow-200">
+            Não há dados de beneficiários recentes para esta operadora.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

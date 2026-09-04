@@ -1,0 +1,29 @@
+{% if operadoras %}
+    <ul class="divide-y divide-slate-100 max-h-96 overflow-y-auto">
+        {% for op in operadoras %}
+            <li>
+                <!-- No futuro, este link levará para a tela de dashboard da operadora selecionada -->
+                <a href="/dashboard/{{ op.codigo_registro_operadora }}" class="block p-4 hover:bg-blue-50 transition-colors">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="text-md font-semibold text-slate-800">{{ op.razao_social }}</h3>
+                            <p class="text-sm text-slate-500">
+                                Registro ANS: <span class="font-medium text-slate-700">{{ op.codigo_registro_operadora }}</span> • CNPJ: {{ op.cnpj }}
+                            </p>
+                        </div>
+                        <div class="text-right">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {{ op.modalidade }}
+                            </span>
+                            <p class="text-xs text-slate-400 mt-1">{{ op.uf }}</p>
+                        </div>
+                    </div>
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <div class="p-8 text-center text-slate-500">
+        Nenhuma operadora encontrada com este termo.
+    </div>
+{% endif %}
