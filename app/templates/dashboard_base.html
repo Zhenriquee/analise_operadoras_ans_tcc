@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard/style.css') }}">
+    <!-- Permite que as abas filhas injetem seus próprios scripts no head se precisarem -->
+    {% block dashboard_head %}{% endblock %}
+{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+
+    <!-- Top Bar: Voltar e Competência -->
+    <div class="flex justify-between items-center mb-4">
+        <a href="/" class="inline-flex items-center text-sm font-medium text-slate-500 hover:text-blue-600 transition-colors">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            Voltar para a busca
+        </a>
+        
+        {% if resumo %}
+        <div class="text-xs font-semibold tracking-wide text-slate-500 bg-slate-200/60 px-3 py-1.5 rounded-full border border-slate-200">
+            <span class="w-2 h-2 inline-block rounded-full bg-blue-500 mr-1 animate-pulse"></span>
+            Data Base: {{ resumo.ultima_competencia }}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Cabeçalho da Operadora (Fixo para todas as abas) -->
+    <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 mb-4 relative overflow-hidden">
+        <div class="absolute -right-4 -top-4 opacity-[0.03] pointer-events-none">
+            <svg class="w-32 h-32" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-1.99.9-1.99 2L3 19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-1 11h-4v4h-4v-4H6v-4h4V6h4v4h4v4z"/></svg>
+        </div>
+        
+        <div class="relative z-10 flex flex-col lg:flex-row justify-between lg:items-center gap-4">
+            <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1.5">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100 uppercase tracking-wider">ANS: {{ operadora.codigo_registro_operadora }}</span>
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200 uppercase tracking-wider">{{ operadora.modalidade }}</span>
+                </div>
+                <h1 class="text-xl font-bold text-slate-800 uppercase tracking-tight leading-tight">{{ operadora.razao_social }}</h1>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-3 text-xs text-slate-600 bg-slate-50 p-4 rounded-lg border border-slate-100 shrink-0">
+                <div class="flex flex-col">
+                    <span class="text-slate-400 font-medium uppercase text-[10px] mb-0.5">CNPJ</span>
+                    <span class="font-semibold">
+                        {% set cnpj_str = "%014d" % operadora.cnpj|int %}
+                        {{ cnpj_str[:2] }}.{{ cnpj_str[2:5] }}.{{ cnpj_str[5:8] }}/{{ cnpj_str[8:12] }}-{{ cnpj_str[12:14] }}
+                    </span>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-slate-400 font-medium uppercase text-[10px] mb-0.5">Representante</span>
+                    <span class="font-semibold break-words">{{ (operadora.representante or 'Não informado') | title }}</span>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-slate-400 font-medium uppercase text-[10px] mb-0.5">Sede</span>
+                    <span class="font-semibold break-words">{{ (operadora.cidade or '') | title }}{% if operadora.cidade %} - {% endif %}{{ operadora.uf }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAV-BAR (Menu de Abas) -->
+    <div class="border-b border-slate-200 mb-8">
+        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+            <!-- Aba 1: Visão Geral -->
+            <a href="/dashboard/{{ operadora.codigo_registro_operadora }}" 
+               class="{% if aba_ativa == 'geral' %}border-blue-500 text-blue-600{% else %}border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700{% endif %} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
+                Visão Geral
+            </a>
+            
+            <!-- Aba 2: Econômico-Financeiro (Exemplo de futura aba) -->
+            <a href="#" 
+               class="{% if aba_ativa == 'financeiro' %}border-blue-500 text-blue-600{% else %}border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700{% endif %} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
+                Econômico-Financeiro
+            </a>
+
+            <!-- Aba 3: Rede Credenciada (Exemplo de futura aba) -->
+            <a href="#" 
+               class="{% if aba_ativa == 'rede' %}border-blue-500 text-blue-600{% else %}border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700{% endif %} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
+                Rede Credenciada
+            </a>
+        </nav>
+    </div>
+
+    <!-- O CONTEÚDO DA ABA ESPECÍFICA SERÁ INJETADO AQUI -->
+    {% block dashboard_content %}{% endblock %}
+
+</div>
+{% endblock %}

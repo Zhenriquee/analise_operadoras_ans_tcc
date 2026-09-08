@@ -4,7 +4,11 @@ BUSCAR_TODAS_OPERADORAS = """
         razao_social, 
         cnpj, 
         modalidade, 
-        uf
+        logradouro,
+        bairro,
+        cidade,
+        uf,
+        representante
     FROM tb_operadoras
     LIMIT 50
 """
@@ -15,7 +19,11 @@ BUSCAR_OPERADORAS_POR_TERMO = """
         razao_social, 
         cnpj, 
         modalidade, 
-        uf
+        logradouro,
+        bairro,
+        cidade,
+        uf,
+        representante
     FROM tb_operadoras
     WHERE UPPER(razao_social) LIKE ? 
        OR CAST(codigo_registro_operadora AS VARCHAR) LIKE ?

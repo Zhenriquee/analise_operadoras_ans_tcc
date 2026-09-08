@@ -1,11 +1,13 @@
 # Descobre a última competência (mês/ano) e soma o total de vidas e municípios
 RESUMO_CARTEIRA_OPERADORA = """
     SELECT 
-        MAX(ID_TEMPO_COMPETENCIA) as ultima_competencia,
-        SUM(qtd_beneficiarios) as total_vidas,
-        COUNT(DISTINCT codigo_municipio) as total_municipios
-    FROM read_parquet(?)
-    WHERE codigo_registro_operadora = ?
+        MAX(f.ID_TEMPO_COMPETENCIA) as ultima_competencia,
+        SUM(f.qtd_beneficiarios) as total_vidas,
+        COUNT(DISTINCT f.codigo_municipio) as total_municipios,
+        COUNT(DISTINCT m.sg_uf) as total_estados
+    FROM read_parquet(?) f
+    LEFT JOIN read_parquet(?) m ON f.codigo_municipio = m.codigo_municipio
+    WHERE f.codigo_registro_operadora = ?
 """
 
 # Soma todas as colunas de faixa etária para a operadora selecionada
@@ -23,17 +25,21 @@ PERFIL_DEMOGRAFICO_OPERADORA = """
         SUM(masculino_59_mais) as m_59_mais, SUM(feminino_59_mais) as f_59_mais
     FROM read_parquet(?)
     WHERE codigo_registro_operadora = ?
+    AND (? IS NULL OR codigo_municipio = ?)
 """
 
-TOP_10_MUNICIPIOS_OPERADORA = """
-    SELECT 
-        f.codigo_municipio,
-        COALESCE(m.municipio || ' - ' || m.sg_uf, 'IBGE ' || CAST(f.codigo_municipio AS VARCHAR)) AS nome_municipio,
-        SUM(f.qtd_beneficiarios) as total_vidas
-    FROM read_parquet(?) f
-    LEFT JOIN read_parquet(?) m ON f.codigo_municipio = m.codigo_municipio
-    WHERE f.codigo_registro_operadora = ?
-    GROUP BY f.codigo_municipio, m.municipio, m.sg_uf
-    ORDER BY total_vidas DESC
-    LIMIT 10
-"""
+def get_query_top_municipios(coluna_soma="qtd_beneficiarios"):
+    # IMPORTANTE: Coloquei um HAVING SUM > 0 para não trazer cidades que zeraram no filtro
+    return f"""
+        SELECT 
+            f.codigo_municipio,
+            COALESCE(m.municipio || ' - ' || m.sg_uf, 'IBGE ' || CAST(f.codigo_municipio AS VARCHAR)) AS nome_municipio,
+            SUM(f.{coluna_soma}) as total_vidas
+        FROM read_parquet(?) f
+        LEFT JOIN read_parquet(?) m ON f.codigo_municipio = m.codigo_municipio
+        WHERE f.codigo_registro_operadora = ?
+        GROUP BY f.codigo_municipio, m.municipio, m.sg_uf
+        HAVING SUM(f.{coluna_soma}) > 0 
+        ORDER BY total_vidas DESC
+        LIMIT 10
+    """
