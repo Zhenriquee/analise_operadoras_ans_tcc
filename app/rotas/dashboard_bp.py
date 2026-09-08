@@ -13,9 +13,11 @@ def painel(registro_ans):
         return "Operadora não encontrada", 404
 
     resumo_carteira = dashboard_service.processar_resumo_operadora(registro_ans)
+    dados_graficos = dashboard_service.processar_graficos(registro_ans)
 
     return render_template(
         'dashboard.html', 
         operadora=operadora_info, 
-        resumo=resumo_carteira
+        resumo=resumo_carteira,
+        graficos=dados_graficos
     )

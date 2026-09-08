@@ -1,5 +1,9 @@
 {% extends 'base.html' %}
 
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard/style.css') }}">
+{% endblock %}
+
 {% block content %}
 <!-- Botão de Voltar -->
 <div class="mb-6">
@@ -24,29 +28,52 @@
     </div>
 </div>
 
-<!-- O Data Storytelling começa aqui -->
-<div class="max-w-4xl">
+<!-- O Data Storytelling -->
+<div class="max-w-6xl mx-auto">
     <h2 class="text-2xl font-bold text-slate-800 mb-6 border-b pb-4">O Tamanho da Operação</h2>
     
     {% if resumo %}
         <!-- Parágrafo Narrativo -->
-        <p class="text-lg text-slate-600 leading-relaxed mb-8">
+        <p class="text-lg text-slate-600 leading-relaxed mb-8 max-w-4xl">
             Até o período de <span class="font-bold text-slate-800">{{ resumo.ultima_competencia }}</span>, 
             a <span class="font-semibold text-blue-700">{{ operadora.razao_social }}</span> era responsável pela cobertura de saúde de 
             <span class="font-extrabold text-2xl text-blue-600 bg-blue-50 px-2 py-1 rounded">{{ resumo.total_vidas_formatado }} vidas</span>. 
-            Sua operação logística e rede de atendimento abragem beneficiários distribuídos em 
+            Sua operação logística e rede de atendimento abrangem beneficiários distribuídos em 
             <span class="font-bold text-slate-800">{{ resumo.total_municipios }} municípios</span> brasileiros.
         </p>
 
-        <!-- Espaço reservado para o Gráfico de Pirâmide Etária (Próximo passo!) -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-96 flex flex-col items-center justify-center text-slate-400">
-            <svg class="w-12 h-12 mb-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-            <p>O gráfico da Pirâmide Etária (Perfil Demográfico) será inserido aqui.</p>
+        <!-- Grid de Gráficos (Substitui o antigo placeholder) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+            <!-- Gráfico 1: Pirâmide Etária -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h3 class="text-lg font-bold text-slate-800 mb-2">Perfil Demográfico</h3>
+                <p class="text-sm text-slate-500 mb-4">Distribuição de beneficiários por idade e gênero.</p>
+                <!-- O ID 'grafico-piramide' é essencial para o Plotly funcionar -->
+                <div id="grafico-piramide" class="w-full h-96"></div>
+            </div>
+
+            <!-- Gráfico 2: Top 10 Municípios -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h3 class="text-lg font-bold text-slate-800 mb-2">Presença Geográfica</h3>
+                <p class="text-sm text-slate-500 mb-4">Top 10 municípios com mais beneficiários ativos.</p>
+                <!-- O ID 'grafico-municipios' é essencial -->
+                <div id="grafico-municipios" class="w-full h-96"></div>
+            </div>
         </div>
     {% else %}
-        <div class="p-6 bg-yellow-50 text-yellow-800 rounded-xl border border-yellow-200">
+        <div class="p-6 bg-yellow-50 text-yellow-800 rounded-xl border border-yellow-200 max-w-4xl">
             Não há dados de beneficiários recentes para esta operadora.
         </div>
     {% endif %}
 </div>
+
+<!-- INJEÇÃO SEGURA DE DADOS -->
+<!-- Usamos uma tag script do tipo JSON para evitar erros de aspas quebradas no HTML -->
+<script id="dados-dashboard" type="application/json">
+    {{ graficos | tojson | safe }}
+</script>
+
+<!-- Importação do Plotly e do nosso JS customizado -->
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<script src="{{ url_for('static', filename='js/dashboard/graficos.js') }}"></script>
 {% endblock %}

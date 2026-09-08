@@ -1,0 +1,9 @@
+/* 
+  Arquivo reservado para estilos específicos do módulo Dashboard.
+  Evite duplicar regras que já existem como utilitários do Tailwind (princípio DRY).
+*/
+
+/* Exemplo: Remover o fundo transparente nativo do Plotly caso necessário */
+.js-plotly-plot .plotly .main-svg {
+    background: transparent !important;
+}

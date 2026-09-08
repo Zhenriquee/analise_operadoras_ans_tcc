@@ -24,3 +24,16 @@ PERFIL_DEMOGRAFICO_OPERADORA = """
     FROM read_parquet(?)
     WHERE codigo_registro_operadora = ?
 """
+
+TOP_10_MUNICIPIOS_OPERADORA = """
+    SELECT 
+        f.codigo_municipio,
+        COALESCE(m.municipio || ' - ' || m.sg_uf, 'IBGE ' || CAST(f.codigo_municipio AS VARCHAR)) AS nome_municipio,
+        SUM(f.qtd_beneficiarios) as total_vidas
+    FROM read_parquet(?) f
+    LEFT JOIN read_parquet(?) m ON f.codigo_municipio = m.codigo_municipio
+    WHERE f.codigo_registro_operadora = ?
+    GROUP BY f.codigo_municipio, m.municipio, m.sg_uf
+    ORDER BY total_vidas DESC
+    LIMIT 10
+"""
