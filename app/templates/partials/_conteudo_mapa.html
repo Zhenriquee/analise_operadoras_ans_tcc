@@ -1,0 +1,12 @@
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden w-full h-[600px] relative z-0">
+    <div id="mapa-clusters" class="w-full h-full"></div>
+</div>
+
+<script id="dados-mapa" type="application/json">{{ geojson | tojson | safe }}</script>
+
+<!-- Dispara o JS isolado sempre que o HTMX devolver esse bloco -->
+<script>
+    if (window.ModuloMapa) {
+        window.ModuloMapa.init();
+    }
+</script>

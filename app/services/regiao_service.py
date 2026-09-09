@@ -28,6 +28,9 @@ class RegiaoService:
         # --- 1. Processa o PARETO ---
         pareto_raw = self.repository.obter_pareto_regiao(cod_mun, modalidades)
         labels_pareto, alvo_pareto, outros_pareto, linha_pareto = [], [], [], []
+
+        dados_emprego = self.repository.obter_emprego_formal(cod_mun)
+        emprego_formal = int(dados_emprego['estoque']) if dados_emprego else 0
         
         for p in pareto_raw:
             labels_pareto.append(p['razao_social'][:20] + "...") 
@@ -54,6 +57,7 @@ class RegiaoService:
             "populacao_formatada": f"{populacao:,}".replace(",", "."),
             "vidas_operadora_formatada": f"{operadora:,}".replace(",", "."),
             "market_share_formatado": f"{market_share:.1f}%".replace(".", ","),
+            "emprego_formal_formatado": f"{emprego_formal:,}".replace(",", "."),
             "cobertura_formatada": f"{cobertura:.1f}%".replace(".", ","),
             "grafico_cobertura": [cobertura],
             "grafico_pareto": {

@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, jsonify
 # Note que agora importamos os 3 serviços!
-from app.dependencies import operadora_service, dashboard_service, regiao_service
+from app.dependencies import operadora_service, dashboard_service, regiao_service, mapa_service
 
 dashboard_bp = Blueprint('dashboard', __name__, url_prefix='/dashboard')
 
@@ -77,3 +77,36 @@ def regiao_conteudo(registro_ans):
     )
     
     return render_template('partials/_storytelling_regiao.html', analise=analise_regiao)
+
+@dashboard_bp.route('/<int:registro_ans>/mapa')
+def mapa_geografico(registro_ans):
+    operadoras = operadora_service.listar_operadoras(str(registro_ans))
+    operadora_info = operadoras[0] if operadoras else None
+    if not operadora_info: return "Operadora não encontrada", 404
+
+    lista_estados = mapa_service.listar_estados_atuacao(registro_ans)
+    
+    # 1. Pega o principal estado (posição 0) como Default
+    estado_default = lista_estados[0] if lista_estados else None
+    
+    # Passa o estado default para a primeira renderização
+    dados_geojson = mapa_service.processar_dados_mapa(registro_ans, estado_default)
+    
+    return render_template(
+        'dashboard_mapa.html', 
+        operadora=operadora_info,
+        estados=lista_estados,
+        estado_selecionado=estado_default, # Enviamos isso para marcar o <select>
+        geojson=dados_geojson,
+        aba_ativa='mapa'
+    )
+
+@dashboard_bp.route('/<int:registro_ans>/mapa/conteudo')
+def mapa_geografico_conteudo(registro_ans):
+    estado_selecionado = request.args.get('estado')
+    
+    # 2. Se o usuário escolheu "TODOS" (Brasil Inteiro), passamos None para o back-end anular o filtro
+    estado_filtro = estado_selecionado if estado_selecionado != "TODOS" else None
+    
+    dados_geojson = mapa_service.processar_dados_mapa(registro_ans, estado_filtro)
+    return render_template('partials/_conteudo_mapa.html', geojson=dados_geojson)

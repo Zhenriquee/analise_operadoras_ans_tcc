@@ -15,6 +15,14 @@ LISTAR_MODALIDADES = """
     ORDER BY modalidade
 """
 
+OBTER_EMPREGO_FORMAL_REGIAO = """
+    SELECT estoque 
+    FROM read_parquet(?)
+    WHERE codigo_municipio = ?
+    ORDER BY competencia DESC
+    LIMIT 1
+"""
+
 def build_query_metricas(especifica=False, tem_modalidades=False):
     join_dim = "JOIN read_parquet(?) d ON f2.codigo_registro_operadora = d.codigo_registro_operadora" if tem_modalidades else ""
     where_mod = "AND d.modalidade IN ({})" if tem_modalidades else ""

@@ -2,10 +2,11 @@ import duckdb
 from app.repositories.queries.regiao_queries import *
 
 class RegiaoRepository:
-    def __init__(self, fato_path: str, municipio_path: str, operadora_path: str):
+    def __init__(self, fato_path: str, municipio_path: str, operadora_path: str, populacao_contratada_path: str):
         self.fato_parquet_path = fato_path
         self.municipio_parquet_path = municipio_path
         self.operadora_parquet_path = operadora_path
+        self.populacao_contratada_path = populacao_contratada_path
 
     def obter_lista_municipios(self, registro_ans: int):
         with duckdb.connect(':memory:') as con:
@@ -64,4 +65,11 @@ class RegiaoRepository:
 
         with duckdb.connect(':memory:') as con:
             resultado = con.execute(query, params).fetchdf()
+        return resultado.to_dict('records')[0] if not resultado.empty else None
+
+    def obter_emprego_formal(self, codigo_municipio: int):
+        with duckdb.connect(':memory:') as con:
+            parametros = [self.populacao_contratada_path, codigo_municipio]
+            resultado = con.execute(OBTER_EMPREGO_FORMAL_REGIAO, parametros).fetchdf()
+        
         return resultado.to_dict('records')[0] if not resultado.empty else None
