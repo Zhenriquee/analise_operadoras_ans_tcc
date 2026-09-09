@@ -1,0 +1,30 @@
+{% extends 'dashboard_base.html' %}
+
+{% block dashboard_content %}
+<!-- CABEÇALHO DA ABA -->
+<div class="mb-6">
+    <h2 class="text-xl sm:text-2xl font-bold text-slate-800 mb-1">Análise de Presença Regional</h2>
+    <p class="text-slate-500 text-xs sm:text-sm">Market Share e indicadores demográficos por município.</p>
+</div>
+
+<!-- CONTAINER PRINCIPAL (FLEXBOX) -->
+<div class="flex flex-col xl:flex-row items-start gap-6 relative">
+    
+    <!-- Inclusão do Componente de Filtros -->
+    {% include 'components/regional/sidebar_filtros.html' %}
+
+    <!-- ÁREA PRINCIPAL DOS INDICADORES E GRÁFICOS -->
+    <main class="flex-1 w-full min-w-0 transition-all duration-300">
+        <div id="conteudo-regiao">
+            {% include 'partials/_storytelling_regiao.html' %}
+        </div>
+    </main>
+
+</div>
+
+<!-- Scripts Exclusivos da Aba Regional (Agora limpos e componentizados!) -->
+<script src="{{ url_for('static', filename='js/utils.js') }}"></script>
+<script src="{{ url_for('static', filename='js/modulos/regional/sidebar_filtros.js') }}"></script>
+<script src="{{ url_for('static', filename='js/modulos/regional/charts_regional.js') }}"></script>
+<script src="{{ url_for('static', filename='js/modulos/regional/modulo_regional.js') }}"></script>
+{% endblock %}

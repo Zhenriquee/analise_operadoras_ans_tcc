@@ -2,6 +2,8 @@ from app.repositories.operadora_repository import OperadoraRepository
 from app.services.operadora_service import OperadoraService
 from app.repositories.dashboard_repository import DashboardRepository
 from app.services.dashboard_service import DashboardService
+from app.repositories.regiao_repository import RegiaoRepository
+from app.services.regiao_service import RegiaoService
 
 # Configuração dos caminhos
 CAMINHO_DIM = 'data/entidade_dim_operadora.parquet'
@@ -18,3 +20,6 @@ operadora_service = OperadoraService(operadora_repo)
 # mas mantemos aqui pela organização da arquitetura.
 dashboard_repo = DashboardRepository(CAMINHO_FATO, CAMINHO_MUNICIPIO)
 dashboard_service = DashboardService(dashboard_repo)
+
+regiao_repo = RegiaoRepository(CAMINHO_FATO, CAMINHO_MUNICIPIO, CAMINHO_DIM)
+regiao_service = RegiaoService(regiao_repo)

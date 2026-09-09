@@ -1,4 +1,4 @@
-# Descobre a última competência (mês/ano) e soma o total de vidas e municípios
+# Descobre a última competência, soma o total de vidas, municípios e estados
 RESUMO_CARTEIRA_OPERADORA = """
     SELECT 
         MAX(f.ID_TEMPO_COMPETENCIA) as ultima_competencia,
@@ -10,7 +10,7 @@ RESUMO_CARTEIRA_OPERADORA = """
     WHERE f.codigo_registro_operadora = ?
 """
 
-# Soma todas as colunas de faixa etária para a operadora selecionada
+# Soma todas as colunas de faixa etária (com filtro opcional de município)
 PERFIL_DEMOGRAFICO_OPERADORA = """
     SELECT 
         SUM(masculino_0_18) as m_0_18, SUM(feminino_0_18) as f_0_18,
@@ -28,8 +28,8 @@ PERFIL_DEMOGRAFICO_OPERADORA = """
     AND (? IS NULL OR codigo_municipio = ?)
 """
 
+# Busca os top 10 municípios (dinâmico baseado na coluna clicada)
 def get_query_top_municipios(coluna_soma="qtd_beneficiarios"):
-    # IMPORTANTE: Coloquei um HAVING SUM > 0 para não trazer cidades que zeraram no filtro
     return f"""
         SELECT 
             f.codigo_municipio,

@@ -1,0 +1,49 @@
+{% if analise %}
+<!-- Dados embutidos em JSON para os scripts lerem -->
+<script id="dados-regiao" type="application/json">
+    {{ analise | tojson | safe }}
+</script>
+
+<div class="space-y-6">
+    <!-- Cabeçalho Dinâmico da Região -->
+    <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200">
+        <h3 class="text-lg sm:text-xl font-bold text-slate-800 mb-1">
+            Análise de Mercado: <span class="text-blue-600">{{ analise.municipio_uf }}</span>
+        </h3>
+        <p class="text-xs sm:text-sm text-slate-500">
+            A população estimada deste município é de <span class="font-semibold text-slate-700">{{ analise.populacao_formatada }} habitantes</span>.
+        </p>
+    </div>
+
+    <!-- Linha 1: Componentes de KPIs -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {% include 'components/regional/kpi_populacao.html' %}
+        {% include 'components/regional/kpi_cobertura.html' %}
+        {% include 'components/regional/kpi_vidas.html' %}
+        {% include 'components/regional/kpi_market_share.html' %}
+    </div>
+
+    <!-- Linha 2: Gráficos de Market Share (Pareto e Cobertura) -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {% include 'components/regional/chart_pareto.html' %}
+        {% include 'components/regional/chart_cobertura.html' %}
+    </div>
+
+    <!-- Linha 3: Gráfico Comparativo -->
+    <div class="grid grid-cols-1 gap-5">
+        {% include 'components/regional/chart_faixas.html' %}
+    </div>
+</div>
+
+<!-- Gatilho para renderizar os gráficos assim que o HTMX injetar o HTML na tela -->
+<script>
+    if (typeof window.ModuloRegional !== 'undefined') {
+        window.ModuloRegional.init();
+    }
+</script>
+
+{% else %}
+<div class="p-5 bg-yellow-50 text-yellow-800 rounded-lg border border-yellow-200 text-sm">
+    Não há dados suficientes para realizar a análise regional deste município.
+</div>
+{% endif %}

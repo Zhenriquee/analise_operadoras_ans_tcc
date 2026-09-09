@@ -11,10 +11,7 @@ class DashboardService:
         if not dados or pd.isna(dados.get("ultima_competencia")):
             return None
             
-        # Pega a competência bruta (ex: 202606) e converte para string
         comp_str = str(int(dados["ultima_competencia"]))
-        
-        # Formata para "MM/AAAA" se tiver 6 dígitos
         if len(comp_str) == 6:
             competencia_formatada = f"{comp_str[4:6]}/{comp_str[0:4]}"
         else:
@@ -24,7 +21,7 @@ class DashboardService:
             "ultima_competencia": competencia_formatada,
             "total_vidas_formatado": f"{int(dados['total_vidas'] or 0):,}".replace(",", "."),
             "total_municipios": int(dados['total_municipios'] or 0),
-            "total_estados": int(dados['total_estados'] or 0) # Adicionado aqui!
+            "total_estados": int(dados['total_estados'] or 0)
         }
 
     def processar_piramide(self, registro_ans: int, codigo_municipio: int = None):
@@ -33,13 +30,11 @@ class DashboardService:
         if not demografia:
             return None
             
-        # Função interna para limpar o NaN e converter para inteiro com segurança
         def seguro_int(valor):
             if pd.isna(valor):
                 return 0
             return int(valor)
 
-        # Previne desenhar o gráfico se todas as colunas de idade retornarem NaN
         if pd.isna(demografia.get('m_0_18')) and pd.isna(demografia.get('f_0_18')):
             return None
             
@@ -49,29 +44,19 @@ class DashboardService:
         ]
         
         homens = [
-            -seguro_int(demografia.get('m_0_18')),
-            -seguro_int(demografia.get('m_19_23')),
-            -seguro_int(demografia.get('m_24_28')),
-            -seguro_int(demografia.get('m_29_33')),
-            -seguro_int(demografia.get('m_34_38')),
-            -seguro_int(demografia.get('m_39_43')),
-            -seguro_int(demografia.get('m_44_48')),
-            -seguro_int(demografia.get('m_49_53')),
-            -seguro_int(demografia.get('m_54_58')),
-            -seguro_int(demografia.get('m_59_mais'))
+            -seguro_int(demografia.get('m_0_18')), -seguro_int(demografia.get('m_19_23')),
+            -seguro_int(demografia.get('m_24_28')), -seguro_int(demografia.get('m_29_33')),
+            -seguro_int(demografia.get('m_34_38')), -seguro_int(demografia.get('m_39_43')),
+            -seguro_int(demografia.get('m_44_48')), -seguro_int(demografia.get('m_49_53')),
+            -seguro_int(demografia.get('m_54_58')), -seguro_int(demografia.get('m_59_mais'))
         ]
         
         mulheres = [
-            seguro_int(demografia.get('f_0_18')),
-            seguro_int(demografia.get('f_19_23')),
-            seguro_int(demografia.get('f_24_28')),
-            seguro_int(demografia.get('f_29_33')),
-            seguro_int(demografia.get('f_34_38')),
-            seguro_int(demografia.get('f_39_43')),
-            seguro_int(demografia.get('f_44_48')),
-            seguro_int(demografia.get('f_49_53')),
-            seguro_int(demografia.get('f_54_58')),
-            seguro_int(demografia.get('f_59_mais'))
+            seguro_int(demografia.get('f_0_18')), seguro_int(demografia.get('f_19_23')),
+            seguro_int(demografia.get('f_24_28')), seguro_int(demografia.get('f_29_33')),
+            seguro_int(demografia.get('f_34_38')), seguro_int(demografia.get('f_39_43')),
+            seguro_int(demografia.get('f_44_48')), seguro_int(demografia.get('f_49_53')),
+            seguro_int(demografia.get('f_54_58')), seguro_int(demografia.get('f_59_mais'))
         ]
         
         return {"faixas": faixas, "homens": homens, "mulheres": mulheres}
@@ -94,7 +79,6 @@ class DashboardService:
 
     def processar_graficos(self, registro_ans: int):
         dados_piramide = self.processar_piramide(registro_ans)
-        # Chama a nova função extraída
         dados_municipios = self.processar_municipios(registro_ans) 
 
         return {

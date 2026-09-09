@@ -1,0 +1,36 @@
+{% extends 'dashboard_base.html' %}
+
+{% block dashboard_content %}
+<div class="mb-6">
+    <h2 class="text-xl sm:text-2xl font-bold text-slate-800 mb-1">Visão Geral da Operação</h2>
+    <p class="text-slate-500 text-xs sm:text-sm">Indicadores consolidados da carteira de beneficiários da operadora.</p>
+</div>
+
+{% if resumo %}
+    <!-- 1. Linha de KPIs -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 mb-8">
+        {% include 'components/kpis/kpi_vidas_cobertas.html' %}
+        {% include 'components/kpis/kpi_municipios_atendidos.html' %}
+        {% include 'components/kpis/kpi_estados_atendidos.html' %}
+    </div>
+
+    <!-- 2. Linha de Gráficos -->
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-5">
+        {% include 'components/charts/chart_piramide_etaria.html' %}
+        {% include 'components/charts/chart_presenca_geografica.html' %}
+    </div>
+{% else %}
+    <div class="p-5 bg-yellow-50 text-yellow-800 rounded-lg border border-yellow-200 text-sm">
+        Não há dados de beneficiários recentes para esta operadora.
+    </div>
+{% endif %}
+
+<!-- Injeção de Dados e Scripts da Aba -->
+<script id="dados-geral" type="application/json">{{ graficos | tojson | safe }}</script>
+<!-- Utilitários Globais (Carrega Primeiro) -->
+<script src="{{ url_for('static', filename='js/utils.js') }}"></script>
+
+<!-- Scripts Modulares dos Gráficos -->
+<script src="{{ url_for('static', filename='js/modulos/geral/chart_piramide.js') }}"></script>
+<script src="{{ url_for('static', filename='js/modulos/geral/chart_presenca.js') }}"></script>
+{% endblock %}
