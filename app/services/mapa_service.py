@@ -33,3 +33,15 @@ class MapaService:
             features.append(feature)
             
         return {"type": "FeatureCollection", "features": features}
+
+    def listar_modalidades(self):
+        return self.repository.obter_lista_modalidades()
+
+    def obter_ranking_municipio(self, codigo_municipio: int, modalidades: list = None):
+        if not codigo_municipio: return None
+        ranking = self.repository.obter_ranking_municipio(codigo_municipio, modalidades)
+        
+        for r in ranking:
+            r['vidas_fmt'] = f"{int(r['vidas']):,}".replace(",", ".")
+            r['market_share_fmt'] = f"{r['market_share']:.1f}%".replace(".", ",")
+        return ranking

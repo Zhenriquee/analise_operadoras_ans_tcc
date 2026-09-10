@@ -53,10 +53,13 @@ window.ModuloMapa = {
                         <h4 class="font-bold text-sm text-slate-800 border-b pb-1 mb-1">${props.nome}</h4>
                         <p class="text-xs mb-1"><span class="font-semibold">Beneficiários:</span> ${vidasFormatadas}</p>
                         <p class="text-xs mb-1"><span class="font-semibold">Perfil:</span> <span style="color:${self.getColor(props.cluster)}">${props.cluster}</span></p>
-                        <p class="text-[10px] text-slate-500 italic mt-2">${props.justificativa}</p>
                     </div>
                 `;
-                layer.bindTooltip(popupContent, { sticky: true, className: 'bg-white border-0 shadow-lg rounded-lg' });
+                layer.bindTooltip(popupContent, { 
+                    sticky: true, 
+                    interactive: false, // ISSO RESOLVE O BUG! O mouse não "tropeça" mais na caixa
+                    className: 'bg-white border-0 shadow-lg rounded-lg' 
+                });
                 
                 // Eventos de Hover
                 layer.on({
@@ -67,6 +70,31 @@ window.ModuloMapa = {
                     },
                     mouseout: function(e) { 
                         self.geoJsonLayer.resetStyle(e.target); 
+                    },
+                    click: function(e) {
+                        // 1. Atualiza o input escondido com o município clicado
+                        document.getElementById('municipio-hidden').value = feature.properties.codigo;
+                        
+                        // 2. Atualiza o painel de Panorama Geral com a Justificativa Estratégica
+                        const panoramaDiv = document.getElementById('panorama-dinamico');
+                        if (panoramaDiv) {
+                            const corCluster = self.getColor(feature.properties.cluster);
+                            panoramaDiv.className = "flex-1 bg-white rounded-lg p-4 flex items-center border-l-4 shadow-sm transition-all duration-300";
+                            panoramaDiv.style.borderLeftColor = corCluster;
+                            
+                            panoramaDiv.innerHTML = `
+                                <div>
+                                    <h4 class="font-bold text-slate-800 text-base mb-1">${feature.properties.nome}</h4>
+                                    <p class="text-sm text-slate-600 leading-relaxed">${feature.properties.justificativa}</p>
+                                </div>
+                            `;
+                        }
+                        
+                        // 3. Dispara a requisição HTMX para atualizar o Ranking via JS
+                        htmx.ajax('GET', `/dashboard/${window.ANS_ALVO}/mapa/ranking`, {
+                            target: '#ranking-container',
+                            source: '#form-filtros-mapa'
+                        });
                     }
                 });
             }

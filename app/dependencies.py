@@ -28,5 +28,5 @@ dashboard_service = DashboardService(dashboard_repo)
 regiao_repo = RegiaoRepository(CAMINHO_FATO, CAMINHO_MUNICIPIO, CAMINHO_DIM, CAMINHO_POPLUACAO_CONTRATADA)
 regiao_service = RegiaoService(regiao_repo)
 
-mapa_repository = MapaRepository(CAMINHO_FATO, CAMINHO_MUNICIPIO)
+mapa_repository = MapaRepository(CAMINHO_FATO, CAMINHO_MUNICIPIO, CAMINHO_DIM)
 mapa_service = MapaService(mapa_repository)

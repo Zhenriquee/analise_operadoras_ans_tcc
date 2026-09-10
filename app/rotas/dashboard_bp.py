@@ -85,18 +85,16 @@ def mapa_geografico(registro_ans):
     if not operadora_info: return "Operadora não encontrada", 404
 
     lista_estados = mapa_service.listar_estados_atuacao(registro_ans)
-    
-    # 1. Pega o principal estado (posição 0) como Default
+    lista_modalidades = mapa_service.listar_modalidades() # NOVO
     estado_default = lista_estados[0] if lista_estados else None
-    
-    # Passa o estado default para a primeira renderização
     dados_geojson = mapa_service.processar_dados_mapa(registro_ans, estado_default)
     
     return render_template(
         'dashboard_mapa.html', 
         operadora=operadora_info,
         estados=lista_estados,
-        estado_selecionado=estado_default, # Enviamos isso para marcar o <select>
+        modalidades=lista_modalidades, # NOVO
+        estado_selecionado=estado_default,
         geojson=dados_geojson,
         aba_ativa='mapa'
     )
@@ -110,3 +108,15 @@ def mapa_geografico_conteudo(registro_ans):
     
     dados_geojson = mapa_service.processar_dados_mapa(registro_ans, estado_filtro)
     return render_template('partials/_conteudo_mapa.html', geojson=dados_geojson)
+
+@dashboard_bp.route('/<int:registro_ans>/mapa/ranking')
+def mapa_ranking(registro_ans):
+    cod_municipio = request.args.get('municipio_selecionado', type=int)
+    modalidades = request.args.getlist('modalidade')
+    modalidades = [m for m in modalidades if m]
+    
+    if not cod_municipio:
+        return "<div class='p-6 bg-slate-50 text-center text-slate-500 rounded-xl border border-slate-200'>Selecione um município no mapa para visualizar o ranking.</div>"
+        
+    ranking = mapa_service.obter_ranking_municipio(cod_municipio, modalidades)
+    return render_template('partials/_ranking_mapa.html', ranking=ranking, ans_alvo=registro_ans)

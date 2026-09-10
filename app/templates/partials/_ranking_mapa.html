@@ -1,0 +1,33 @@
+<div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+    <div class="p-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+        <h3 class="text-sm font-bold text-slate-700">Top 10 Operadoras</h3>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm text-slate-600">
+            <thead class="bg-slate-50 text-[10px] uppercase font-bold text-slate-400">
+                <tr>
+                    <th class="px-4 py-3">#</th>
+                    <th class="px-4 py-3">Operadora</th>
+                    <th class="px-4 py-3">Modalidade</th>
+                    <th class="px-4 py-3 text-right">Vidas</th>
+                    <th class="px-4 py-3 text-right">Market Share</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for op in ranking %}
+                <tr class="hover:bg-slate-50 transition-colors {% if op.codigo_registro_operadora == ans_alvo %}bg-blue-50/50 hover:bg-blue-50{% endif %}">
+                    <td class="px-4 py-2 font-semibold text-slate-400">{{ loop.index }}º</td>
+                    <td class="px-4 py-2 font-medium {% if op.codigo_registro_operadora == ans_alvo %}text-blue-700 font-bold{% else %}text-slate-700{% endif %}">
+                        {{ op.razao_social }}
+                    </td>
+                    <td class="px-4 py-2 text-xs text-slate-500">{{ op.modalidade }}</td>
+                    <td class="px-4 py-2 text-right font-medium">{{ op.vidas_fmt }}</td>
+                    <td class="px-4 py-2 text-right font-bold {% if op.codigo_registro_operadora == ans_alvo %}text-blue-600{% else %}text-slate-700{% endif %}">
+                        {{ op.market_share_fmt }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

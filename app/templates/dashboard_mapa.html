@@ -1,10 +1,12 @@
 {% extends 'dashboard_base.html' %}
 
 {% block dashboard_head %}
+<!-- O CSS do Leaflet precisa ser carregado no head -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 {% endblock %}
 
 {% block dashboard_content %}
+<!-- CABEÇALHO DA ABA -->
 <div class="mb-6">
     <h2 class="text-xl sm:text-2xl font-bold text-slate-800 mb-1">Mapeamento Estratégico (Clusters)</h2>
     <p class="text-slate-500 text-xs sm:text-sm">Distribuição geográfica e classificação de mercado dos municípios de atuação.</p>
@@ -13,19 +15,89 @@
 <!-- CONTAINER PRINCIPAL (FLEXBOX) -->
 <div class="flex flex-col xl:flex-row items-start gap-6 relative">
     
-    <!-- Inclusão do Componente de Filtros -->
+    <!-- INCLUSÃO DA SIDEBAR DE FILTROS -->
     {% include 'components/mapa/sidebar_filtros_mapa.html' %}
 
     <!-- ÁREA PRINCIPAL DO MAPA -->
     <main class="flex-1 w-full min-w-0 transition-all duration-300">
+        <!-- Div alvo para as atualizações do HTMX -->
         <div id="conteudo-mapa">
             {% include 'partials/_conteudo_mapa.html' %}
+        </div>
+        
+        <!-- PAINEL INFERIOR: Legenda, Panorama e Ranking -->
+        <div class="mt-6 flex flex-col gap-6">
+            
+            <!-- Grid: Legenda (Esquerda) e Panorama (Direita) -->
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                
+                <!-- Legenda do K-Means -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 col-span-1">
+                    <h3 class="text-sm font-bold text-slate-700 mb-3 border-b border-slate-100 pb-2">Legenda dos Clusters (K-Means)</h3>
+                    <ul class="flex flex-col gap-3">
+                        <li class="flex items-start gap-2">
+                            <span class="w-3 h-3 rounded-full bg-blue-500 shrink-0 mt-1"></span>
+                            <div>
+                                <p class="text-xs font-bold text-slate-700">Oceano Azul Pagante</p>
+                                <p class="text-[10px] text-slate-500 leading-tight mt-0.5">Alta pop. jovem (24-38), baixa saturação e baixo risco clínico.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="w-3 h-3 rounded-full bg-amber-500 shrink-0 mt-1"></span>
+                            <div>
+                                <p class="text-xs font-bold text-slate-700">Mercado Saturado Premium</p>
+                                <p class="text-[10px] text-slate-500 leading-tight mt-0.5">Alto vigor corporativo (CLT), porém com mercado já saturado.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="w-3 h-3 rounded-full bg-purple-500 shrink-0 mt-1"></span>
+                            <div>
+                                <p class="text-xs font-bold text-slate-700">Fortaleza Monopolista</p>
+                                <p class="text-[10px] text-slate-500 leading-tight mt-0.5">HHI extremo (bloqueio competitivo) e alto risco atuarial (idosos).</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="w-3 h-3 rounded-full bg-red-500 shrink-0 mt-1"></span>
+                            <div>
+                                <p class="text-xs font-bold text-slate-700">Armadilha Pulverizada</p>
+                                <p class="text-[10px] text-slate-500 leading-tight mt-0.5">Baixa densidade corporativa e concorrência extremamente fragmentada.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Panorama Dinâmico do Município -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 col-span-1 xl:col-span-2 flex flex-col">
+                    <h3 class="text-sm font-bold text-slate-700 mb-3 border-b border-slate-100 pb-2">Panorama do Município Selecionado</h3>
+                    
+                    <div id="panorama-dinamico" class="flex-1 bg-slate-50 rounded-lg border border-slate-100 p-4 flex items-center justify-center text-sm text-slate-400 italic transition-all duration-300">
+                        <div class="text-center">
+                            <svg class="w-6 h-6 mx-auto mb-2 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Selecione um município no mapa para ler a justificativa gerada pelo algoritmo.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Container do Ranking HTMX -->
+            <div id="ranking-container">
+                <div class="p-6 bg-white rounded-xl border border-slate-200 shadow-sm text-center text-slate-400 text-sm italic">
+                    O ranking de Market Share aparecerá aqui após a seleção.
+                </div>
+            </div>
+
         </div>
     </main>
 
 </div>
 
+<!-- SCRIPTS EXCLUSIVOS DA ABA DO MAPA -->
+<!-- 1. Importa a biblioteca do Leaflet -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Variável global para o HTMX saber qual operadora estamos analisando -->
+<script>window.ANS_ALVO = "{{ operadora.codigo_registro_operadora }}";</script><!-- 2. Importa a lógica da Sidebar expansível -->
 <script src="{{ url_for('static', filename='js/modulos/mapa/sidebar_filtros_mapa.js') }}"></script>
+
+<!-- 3. Importa a lógica do nosso Mapa Interativo -->
 <script src="{{ url_for('static', filename='js/modulos/mapa/mapa_interativo.js') }}"></script>
 {% endblock %}

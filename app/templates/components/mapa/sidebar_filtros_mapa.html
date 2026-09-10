@@ -11,20 +11,33 @@
     </div>
     
     <div id="sidebar-content" class="transition-opacity duration-300 opacity-100">
-        <form id="form-filtros-mapa" 
-              hx-get="/dashboard/{{ operadora.codigo_registro_operadora }}/mapa/conteudo" 
-              hx-target="#conteudo-mapa" 
-              hx-trigger="change"
-              class="p-5 flex flex-col gap-6 xl:min-w-[15.5rem]">
+        <form id="form-filtros-mapa" class="p-5 flex flex-col gap-6 xl:min-w-[15.5rem]">
             
+            <!-- Input Escondido para guardar o clique no mapa -->
+            <input type="hidden" name="municipio_selecionado" id="municipio-hidden" value="">
+
             <div>
-                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">1. Filtrar por Estado</label>
-                <select name="estado" class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-sm font-medium rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 shadow-sm outline-none cursor-pointer">
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">1. Filtrar Mapa por Estado</label>
+                <!-- O SELECT atualiza o mapa -->
+                <select name="estado" hx-get="/dashboard/{{ operadora.codigo_registro_operadora }}/mapa/conteudo" hx-target="#conteudo-mapa" class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-sm font-medium rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 shadow-sm outline-none cursor-pointer">
                     <option value="TODOS">Brasil Inteiro</option>
                     {% for uf in estados %}
                         <option value="{{ uf }}" {% if uf == estado_selecionado %}selected{% endif %}>{{ uf }}</option>
                     {% endfor %}
                 </select>
+            </div>
+
+            <div class="flex flex-col">
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">2. Filtrar Ranking por Modalidade</label>
+                <div class="max-h-[300px] overflow-y-auto pr-2 flex flex-col gap-3">
+                    {% for mod in modalidades %}
+                        <label class="flex items-start gap-3 cursor-pointer group/item">
+                            <!-- O CHECKBOX atualiza o Ranking e inclui todo o formulário (estado e cidade clicada) -->
+                            <input type="checkbox" name="modalidade" value="{{ mod }}" hx-get="/dashboard/{{ operadora.codigo_registro_operadora }}/mapa/ranking" hx-target="#ranking-container" hx-include="#form-filtros-mapa" class="mt-0.5 w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer shadow-sm">
+                            <span class="text-xs font-medium text-slate-600 group-hover/item:text-blue-600 leading-snug transition-colors">{{ mod }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
             </div>
         </form>
     </div>
